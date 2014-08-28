@@ -705,7 +705,7 @@
     _delegateHasDidChangeDragState = [_delegate respondsToSelector:@selector(mapView:annotation:didChangeDragState:fromOldState:)];
 
     _delegateHasLayerForAnnotation = [_delegate respondsToSelector:@selector(mapView:layerForAnnotation:)];
-    _delegateHasAnnotationSorting = [_delegate respondsToSelector:@selector(mapView:sortingForAnnotation:comparedToAnnotation:)];
+    _delegateHasAnnotationSorting = [_delegate respondsToSelector:@selector(annotationSortingComparatorForMapView:)];
     _delegateHasWillHideLayerForAnnotation = [_delegate respondsToSelector:@selector(mapView:willHideLayerForAnnotation:)];
     _delegateHasDidHideLayerForAnnotation = [_delegate respondsToSelector:@selector(mapView:didHideLayerForAnnotation:)];
 
