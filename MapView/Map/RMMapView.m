@@ -3112,10 +3112,6 @@
     }
     else
     {
-        // Default to MapKit behavior, which is sorting back-to-front based on
-        // screen top-to-bottom ordering, with user location annotations at the
-        // bottom.
-        //
         // First, don't bother sorting user location annotations since we
         // statically apply their layering.
         //
@@ -3158,7 +3154,7 @@
             return NSOrderedSame;
         }];
 
-        // Manually apply layering values to the user location annotations.
+        // Manually place user location annotations below all others.
         //
         _accuracyCircleAnnotation.layer.zPosition = -MAXFLOAT;
         _trackingHaloAnnotation.layer.zPosition   = -MAXFLOAT + 1;
