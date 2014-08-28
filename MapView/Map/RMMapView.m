@@ -3102,16 +3102,13 @@
 {
     NSMutableArray *sortedAnnotations = [NSMutableArray arrayWithArray:[_visibleAnnotations allObjects]];
 
-    if (_delegateHasAnnotationSorting)
-    {
-        NSComparator comparator;
+    NSComparator comparator;
 
-        if ((comparator = [_delegate annotationSortingComparatorForMapView:self]))
-        {
-            // Sort using the custom comparator.
-            //
-            [sortedAnnotations sortUsingComparator:comparator];
-        }
+    if (_delegateHasAnnotationSorting && (comparator = [_delegate annotationSortingComparatorForMapView:self]))
+    {
+        // Sort using the custom comparator.
+        //
+        [sortedAnnotations sortUsingComparator:comparator];
     }
     else
     {
