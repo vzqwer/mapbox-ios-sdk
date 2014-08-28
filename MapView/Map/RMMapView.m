@@ -66,9 +66,6 @@
 #define kDefaultMaximumZoomLevel 25.0
 #define kDefaultInitialZoomLevel 11.0
 
-#define kRMTrackingHaloAnnotationTypeName   @"RMTrackingHaloAnnotation"
-#define kRMAccuracyCircleAnnotationTypeName @"RMAccuracyCircleAnnotation"
-
 #pragma mark --- end constants ----
 
 @interface RMMapView (PrivateMethods) <UIScrollViewDelegate,

@@ -28,6 +28,9 @@
 
 #import "RMFoundation.h"
 
+#define kRMTrackingHaloAnnotationTypeName   @"RMTrackingHaloAnnotation"
+#define kRMAccuracyCircleAnnotationTypeName @"RMAccuracyCircleAnnotation"
+
 @class RMMapView, RMMapLayer, RMQuadTreeNode;
 
 /** An RMAnnotation defines a container for annotation data to be placed on a map. At a future point in time, depending on map use, a visible layer may be requested and displayed for the annotation. The layer is provided by an RMMapView's delegate when first needed for display. 
