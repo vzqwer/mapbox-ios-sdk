@@ -66,7 +66,7 @@ typedef enum : NSUInteger {
 
 /** Returns a block used for determining the sort order of annotation layers. The block will be called repeatedly during map change events to ensure annotation layers stay sorted in the desired order.
 *
-*   If you do not implement this method, a default sort order will be used. First, user location annotation layers will be shown underneath all other annotation layers. Then, any cluster annotation layers are placed above that, then shape annotation layers, then finally marker annotation layers. Marker annotation layers closer to the bottom of the screen will be sorted above those closer to the top of the screen to provide a natural-looking sort order.
+*   If you do not implement this method, a default sort order will be used. First, user location annotation layers will be shown underneath all other annotation layers. Then, any shape annotation layers are placed above that, then marker annotation layers, and finally, cluster annotation layers. Marker annotation layers closer to the bottom of the screen will be sorted above those closer to the top of the screen to provide a natural-looking sort order.
 * 
 *   In all cases, any currently selected annotation (and its possible callout) are shown above all other annotations.
 *

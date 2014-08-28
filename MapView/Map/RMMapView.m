@@ -3127,10 +3127,10 @@
             // Sort clusters below non-clusters.
             //
             if (   annotation1.isClusterAnnotation && ! annotation2.isClusterAnnotation)
-                return NSOrderedAscending;
+                return NSOrderedDescending;
 
             if ( ! annotation1.isClusterAnnotation &&   annotation2.isClusterAnnotation)
-                return NSOrderedDescending;
+                return NSOrderedAscending;
 
             // Sort markers above shapes.
             //
