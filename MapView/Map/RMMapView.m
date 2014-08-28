@@ -3109,19 +3109,40 @@
     }
     else
     {
-        // First, don't bother sorting user location annotations since we
-        // statically apply their layering.
+        // Sort using the default comparator.
         //
-        [sortedAnnotations filterUsingPredicate:[NSPredicate predicateWithFormat:@"isUserLocationAnnotation = NO"]];
-
-        // Sort the rest of the annotations.
-        //
-        [sortedAnnotations sortUsingComparator:^(id obj1, id obj2)
+        [sortedAnnotations sortUsingComparator:^(RMAnnotation *annotation1, RMAnnotation *annotation2)
         {
-            RMAnnotation *annotation1 = (RMAnnotation *)obj1;
-            RMAnnotation *annotation2 = (RMAnnotation *)obj2;
+            // Sort user location annotations above all.
+            //
+            if (   annotation1.isUserLocationAnnotation && ! annotation2.isUserLocationAnnotation)
+                return NSOrderedAscending;
 
-            // Sort clusters below non-clusters.
+            if ( ! annotation1.isUserLocationAnnotation &&   annotation2.isUserLocationAnnotation)
+                return NSOrderedDescending;
+
+            // Amongst user location annotations, sort properly.
+            //
+            if (annotation1.isUserLocationAnnotation && annotation2.isUserLocationAnnotation)
+            {
+                // User dot on top.
+                //
+                if ([annotation1 isKindOfClass:[RMUserLocation class]])
+                    return NSOrderedDescending;
+
+                if ([annotation2 isKindOfClass:[RMUserLocation class]])
+                    return NSOrderedAscending;
+
+                // Halo above accuracy circle.
+                //
+                if ([annotation1.annotationType isEqualToString:kRMTrackingHaloAnnotationTypeName])
+                    return NSOrderedDescending;
+
+                if ([annotation2.annotationType isEqualToString:kRMTrackingHaloAnnotationTypeName])
+                    return NSOrderedAscending;
+            }
+
+            // Sort clusters above non-clusters.
             //
             if (   annotation1.isClusterAnnotation && ! annotation2.isClusterAnnotation)
                 return NSOrderedDescending;
@@ -3139,23 +3160,17 @@
 
             // Sort the rest in increasing y-position.
             //
-            CGPoint obj1Point = [self convertPoint:annotation1.position fromView:_overlayView];
-            CGPoint obj2Point = [self convertPoint:annotation2.position fromView:_overlayView];
+            CGPoint point1 = [self coordinateToPixel:annotation1.coordinate];
+            CGPoint point2 = [self coordinateToPixel:annotation2.coordinate];
 
-            if (obj1Point.y > obj2Point.y)
+            if (point1.y > point2.y)
                 return NSOrderedDescending;
 
-            if (obj1Point.y < obj2Point.y)
+            if (point1.y < point2.y)
                 return NSOrderedAscending;
 
             return NSOrderedSame;
         }];
-
-        // Manually place user location annotations below all others.
-        //
-        _accuracyCircleAnnotation.layer.zPosition = -MAXFLOAT;
-        _trackingHaloAnnotation.layer.zPosition   = -MAXFLOAT + 1;
-        _userLocation.layer.zPosition             = -MAXFLOAT + 2;
     }
 
     // Apply layering values based on sort order.
