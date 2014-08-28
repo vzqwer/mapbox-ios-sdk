@@ -64,6 +64,21 @@ typedef enum : NSUInteger {
 *   @return The annotation layer to display for the specified annotation or `nil` if you do not want to display a layer. */
 - (RMMapLayer *)mapView:(RMMapView *)mapView layerForAnnotation:(RMAnnotation *)annotation;
 
+/** Returns a block used for determining the sort order of annotation layers. The block will be called repeatedly during map change events to ensure annotation layers stay sorted in the desired order.
+*
+*   If you do not implement this method, a default sort order will be used. First, user location annotation layers will be shown underneath all other annotation layers. Then, any cluster annotation layers are placed above that, then shape annotation layers, then finally marker annotation layers. Marker annotation layers closer to the bottom of the screen will be sorted above those closer to the top of the screen to provide a natural-looking sort order.
+* 
+*   In all cases, any currently selected annotation (and its possible callout) are shown above all other annotations.
+*
+*   Your implementation of this method should be as lightweight as possible to avoid affecting map renderering performance. 
+*
+*   @see [RMAnnotation isClusterAnnotation]
+*   @see [RMAnnotation isUserLocationAnnotation]
+*
+*   @param mapView The map view whose annotations need sorting. 
+*   @return A comparison block to use in order to sort the annotations. */
+- (NSComparator)annotationSortingComparatorForMapView:(RMMapView *)mapView;
+
 /** Tells the delegate that the visible layer for an annotation is about to be hidden from view due to scrolling or zooming the map.
 *   @param mapView The map view whose annotation alyer will be hidden.
 *   @param annotation The annotation whose layer will be hidden. */
