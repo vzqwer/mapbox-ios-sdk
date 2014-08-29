@@ -3160,13 +3160,10 @@
 
             // Sort the rest in increasing y-position.
             //
-            CGPoint point1 = [self coordinateToPixel:annotation1.coordinate];
-            CGPoint point2 = [self coordinateToPixel:annotation2.coordinate];
-
-            if (point1.y > point2.y)
+            if (annotation1.position.y > annotation2.position.y)
                 return NSOrderedDescending;
 
-            if (point1.y < point2.y)
+            if (annotation1.position.y < annotation2.position.y)
                 return NSOrderedAscending;
 
             return NSOrderedSame;
