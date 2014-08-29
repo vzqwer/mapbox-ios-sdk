@@ -328,8 +328,8 @@ typedef enum : NSUInteger {
 /** Remove all annotations from the map. This does not remove user location annotations, if any. */
 - (void)removeAllAnnotations;
 
-/** The screen position for a given annotation. 
-*   @param annotation The annotation for which to return the current screen position.
+/** The relative map position for a given annotation. 
+*   @param annotation The annotation for which to return the current position.
 *   @return The screen position of the annotation. */
 - (CGPoint)mapPositionForAnnotation:(RMAnnotation *)annotation;
 
