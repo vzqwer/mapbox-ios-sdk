@@ -187,6 +187,7 @@
     CGPoint _dragOffset;
 
     CLLocationManager *_locationManager;
+    CLLocation *_oldLocation;
 
     RMAnnotation *_accuracyCircleAnnotation;
     RMAnnotation *_trackingHaloAnnotation;
@@ -3509,7 +3510,19 @@
         [_delegate mapView:self didChangeUserTrackingMode:_userTrackingMode animated:animated];
 }
 
+- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray *)locations
+{
+    CLLocation *newLocation = [locations lastObject];
+    [self handleUpdateToLocation:newLocation fromLocation:_oldLocation];
+    _oldLocation = newLocation;
+}
+
 - (void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
+{
+    [self handleUpdateToLocation:newLocation fromLocation:oldLocation];
+}
+
+- (void)handleUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation
 {
     if ( ! _showsUserLocation || _mapScrollView.isDragging || ! newLocation || ! CLLocationCoordinate2DIsValid(newLocation.coordinate))
         return;
