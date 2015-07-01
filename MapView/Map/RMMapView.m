@@ -457,9 +457,9 @@
 
 + (NSString *)pathForBundleResourceNamed:(NSString *)name ofType:(NSString *)extension
 {
-    NSAssert([[NSBundle mainBundle] pathForResource:@"Mapbox" ofType:@"bundle"], @"Resource bundle not found in application.");
+    NSAssert([[NSBundle bundleForClass:[self class]] pathForResource:@"Mapbox" ofType:@"bundle"], @"Resource bundle not found in application.");
 
-    NSString *bundlePath      = [[NSBundle mainBundle] pathForResource:@"Mapbox" ofType:@"bundle"];
+    NSString *bundlePath      = [[NSBundle bundleForClass:[self class]] pathForResource:@"Mapbox" ofType:@"bundle"];
     NSBundle *resourcesBundle = [NSBundle bundleWithPath:bundlePath];
 
     return [resourcesBundle pathForResource:name ofType:extension];
@@ -729,6 +729,7 @@
         BOOL flag = wasUserEvent;
 
         __weak RMMapView *weakSelf = self;
+        __weak id<RMMapViewDelegate> weakDelegate = _delegate;
         BOOL hasBeforeMapMove = _delegateHasBeforeMapMove;
         BOOL hasAfterMapMove  = _delegateHasAfterMapMove;
 
@@ -737,7 +738,7 @@
             dispatch_async(dispatch_get_main_queue(), ^(void)
             {
                 if (hasBeforeMapMove)
-                    [_delegate beforeMapMove:weakSelf byUser:flag];
+                    [weakDelegate beforeMapMove:weakSelf byUser:flag];
             });
         }
 
@@ -750,7 +751,7 @@
                 dispatch_async(dispatch_get_main_queue(), ^(void)
                 {
                     if (hasAfterMapMove)
-                        [_delegate afterMapMove:weakSelf byUser:flag];
+                        [weakDelegate afterMapMove:weakSelf byUser:flag];
                 });
             }];
         }
@@ -772,6 +773,7 @@
         BOOL flag = wasUserEvent;
 
         __weak RMMapView *weakSelf = self;
+        __weak id<RMMapViewDelegate> weakDelegate = _delegate;
         BOOL hasBeforeMapZoom = _delegateHasBeforeMapZoom;
         BOOL hasAfterMapZoom  = _delegateHasAfterMapZoom;
 
@@ -780,7 +782,7 @@
             dispatch_async(dispatch_get_main_queue(), ^(void)
             {
                 if (hasBeforeMapZoom)
-                    [_delegate beforeMapZoom:weakSelf byUser:flag];
+                    [weakDelegate beforeMapZoom:weakSelf byUser:flag];
             });
         }
 
@@ -793,7 +795,7 @@
                 dispatch_async(dispatch_get_main_queue(), ^(void)
                 {
                     if (hasAfterMapZoom)
-                        [_delegate afterMapZoom:weakSelf byUser:flag];
+                        [weakDelegate afterMapZoom:weakSelf byUser:flag];
                 });
             }];
         }
@@ -879,8 +881,6 @@
     myOrigin.x = myOrigin.x - (zoomRect.size.width / 2);
     myOrigin.y = myOrigin.y - (zoomRect.size.height / 2);
 
-    RMLog(@"Origin is calculated at: %f, %f", [_projection projectedPointToCoordinate:myOrigin].longitude, [_projection projectedPointToCoordinate:myOrigin].latitude);
-
     zoomRect.origin = myOrigin;
 
 //    RMLog(@"Origin: x=%f, y=%f, w=%f, h=%f", zoomRect.origin.easting, zoomRect.origin.northing, zoomRect.size.width, zoomRect.size.height);
@@ -964,7 +964,7 @@
 
 - (void)setCenterCoordinate:(CLLocationCoordinate2D)centerCoordinate
 {
-    [self setCenterProjectedPoint:[_projection coordinateToProjectedPoint:centerCoordinate]];
+    [self setCenterCoordinate:centerCoordinate animated:NO];
 }
 
 - (void)setCenterCoordinate:(CLLocationCoordinate2D)centerCoordinate animated:(BOOL)animated
@@ -990,7 +990,7 @@
 
 - (void)setCenterProjectedPoint:(RMProjectedPoint)centerProjectedPoint
 {
-    [self setCenterProjectedPoint:centerProjectedPoint animated:YES];
+    [self setCenterProjectedPoint:centerProjectedPoint animated:NO];
 }
 
 - (void)setCenterProjectedPoint:(RMProjectedPoint)centerProjectedPoint animated:(BOOL)animated
@@ -1345,6 +1345,7 @@
     _mapScrollView.maximumZoomScale = exp2f([self maxZoom]);
     _mapScrollView.contentOffset = CGPointMake(0.0, 0.0);
     _mapScrollView.clipsToBounds = NO;
+    _mapScrollView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
     _tiledLayersSuperview = [[UIView alloc] initWithFrame:CGRectMake(0.0, 0.0, contentSize.width, contentSize.height)];
     _tiledLayersSuperview.userInteractionEnabled = NO;
@@ -1378,6 +1379,7 @@
 
     _overlayView = [[RMMapOverlayView alloc] initWithFrame:[self bounds]];
     _overlayView.userInteractionEnabled = NO;
+    _overlayView.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
 
     [self insertSubview:_overlayView aboveSubview:_mapScrollView];
 
@@ -2498,7 +2500,7 @@
 {
     tileSourcesMinZoom = ceilf(tileSourcesMinZoom) - 0.99;
 
-    if ( ! self.adjustTilesForRetinaDisplay && _screenScale > 1.0)
+    if ( ! self.adjustTilesForRetinaDisplay && _screenScale > 1.0 && ! [RMMapboxSource isUsingLargeTiles])
         tileSourcesMinZoom -= 1.0;
 
     [self setMinZoom:tileSourcesMinZoom];
@@ -2525,7 +2527,7 @@
 {
     tileSourcesMaxZoom = floorf(tileSourcesMaxZoom);
 
-    if ( ! self.adjustTilesForRetinaDisplay && _screenScale > 1.0)
+    if ( ! self.adjustTilesForRetinaDisplay && _screenScale > 1.0 && ! [RMMapboxSource isUsingLargeTiles])
         tileSourcesMaxZoom -= 1.0;
 
     [self setMaxZoom:tileSourcesMaxZoom];
@@ -2558,7 +2560,7 @@
 {
     float zoom = ceilf(_zoom);
 
-    if ( ! self.adjustTilesForRetinaDisplay && _screenScale > 1.0)
+    if ( ! self.adjustTilesForRetinaDisplay && _screenScale > 1.0 && ! [RMMapboxSource isUsingLargeTiles])
         zoom += 1.0;
 
     return zoom;
@@ -2568,7 +2570,7 @@
 {
     tileSourcesZoom = floorf(tileSourcesZoom);
 
-    if ( ! self.adjustTilesForRetinaDisplay && _screenScale > 1.0)
+    if ( ! self.adjustTilesForRetinaDisplay && _screenScale > 1.0 && ! [RMMapboxSource isUsingLargeTiles])
         tileSourcesZoom -= 1.0;
 
     [self setZoom:tileSourcesZoom];
@@ -2634,7 +2636,7 @@
 
 - (float)adjustedZoomForRetinaDisplay
 {
-    if (!self.adjustTilesForRetinaDisplay && _screenScale > 1.0)
+    if (!self.adjustTilesForRetinaDisplay && _screenScale > 1.0 && ! [RMMapboxSource isUsingLargeTiles])
         return [self zoom] + 1.0;
 
     return [self zoom];
@@ -3319,7 +3321,9 @@
         //
         if ([CLLocationManager instancesRespondToSelector:@selector(requestWhenInUseAuthorization)])
         {
-            NSAssert([[[NSBundle mainBundle] infoDictionary] valueForKey:@"NSLocationWhenInUseUsageDescription"], @"For iOS 8 and above, your app must have a value for NSLocationWhenInUseUsageDescription in its Info.plist");
+            BOOL hasLocationDescription = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSLocationWhenInUseUsageDescription"] ||
+                [[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSLocationAlwaysUsageDescription"];
+            NSAssert(hasLocationDescription, @"For iOS 8 and above, your app must have a value for NSLocationWhenInUseUsageDescription or NSLocationAlwaysUsageDescription in its Info.plist");
             [_locationManager requestWhenInUseAuthorization];
         }
 #endif
